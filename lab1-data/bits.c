@@ -213,7 +213,8 @@ int byteXor(int x, int y, int n) {
  *   Rating: 3
  */
 int logicalAnd(int x, int y) {
-  return !!(x & y);
+  return !!x & !!y;
+  // return !!(x & y);
 }
 /*
  *   logicalOr - x || y
@@ -222,7 +223,8 @@ int logicalAnd(int x, int y) {
  *   Rating: 3
  */
 int logicalOr(int x, int y) {
-  return !!(x | y);
+  return !!x | !!y;
+  // return !!(x | y);
 }
 /*
  * rotateLeft - Rotate x to the left by n
@@ -234,7 +236,7 @@ int logicalOr(int x, int y) {
  */
 int rotateLeft(int x, int n) {
   int mask = 1 << 31 >> 31 + ~n ;
-  return x >> 31 + ~n + 1 & ~mask | x << n;
+  return x >> 32 + ~n + 1 & ~mask | x << n;
 }
 /*
  * parityCheck - returns 1 if x contains an odd number of 1's
@@ -249,7 +251,7 @@ int parityCheck(int x) {
   x = x ^ x << 4;
   x = x ^ x << 2;
   x = x ^ x << 1;
-  return !!x;
+  return !!(x & 1 << 31);
 
   // int mask = 0xff << 8 + 0xff;
   // x = x & mask ^ x >> 16 & mask;
@@ -273,7 +275,7 @@ int parityCheck(int x) {
  *   Rating: 2
  */
 int mul2OK(int x) {
-  return x >> 31 & 1 ^ x >> 30 & 1;     // x第31位和第30位异或
+  !return x >> 31 & 1 ^ x >> 30 & 1;    // x第31位和第30位异或
 }
 /*
  * mult3div2 - multiplies by 3/2 rounding toward 0,
