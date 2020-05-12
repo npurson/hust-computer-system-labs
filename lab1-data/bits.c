@@ -172,7 +172,6 @@ NOTES:
  */
 int lsbZero(int x) {
   return x >> 1 << 1;
-
   // return x & ~0xff;
 }
 /*
@@ -186,9 +185,7 @@ int lsbZero(int x) {
 int byteNot(int x, int n) {
   n = n << 3;
   return x ^ 0xff << n;     // 与1异或相当于取反
-
-  // n = n << 3;
-  // int nByte = x & 0xff << n;
+  // int nByte = x & 0xff << (n << 3);
   // return x ^ nByte | nByte;
 }
 /*
@@ -202,8 +199,7 @@ int byteNot(int x, int n) {
  *   Rating: 2
  */
 int byteXor(int x, int y, int n) {
-  n = n << 3;
-  int mask = 0xff << n;
+  int mask = 0xff << (n << 3);
   return !!(x & mask ^ y & mask);
 }
 /*
@@ -213,7 +209,8 @@ int byteXor(int x, int y, int n) {
  *   Rating: 3
  */
 int logicalAnd(int x, int y) {
-  return !!(x & y);
+  return !!x & !!y;
+  // return !!(x & y);
 }
 /*
  *   logicalOr - x || y
@@ -222,7 +219,8 @@ int logicalAnd(int x, int y) {
  *   Rating: 3
  */
 int logicalOr(int x, int y) {
-  return !!(x | y);
+  return !!x | !!y;
+  // return !!(x | y);
 }
 /*
  * rotateLeft - Rotate x to the left by n
@@ -233,8 +231,8 @@ int logicalOr(int x, int y) {
  *   Rating: 3
  */
 int rotateLeft(int x, int n) {
-  int mask = 1 << 31 >> 31 - n;
-  return x >> 31 + ~n + 1 & ~mask | x << n;
+  int mask = 1 << 31 >> 31 + ~n + 1;
+  return x >> 32 + ~n + 1 & ~mask | x << n;
 }
 /*
  * parityCheck - returns 1 if x contains an odd number of 1's
@@ -249,7 +247,7 @@ int parityCheck(int x) {
   x = x ^ x << 4;
   x = x ^ x << 2;
   x = x ^ x << 1;
-  return !!x;
+  return x >> 31 & 0x1;
 
   // int mask = 0xff << 8 + 0xff;
   // x = x & mask ^ x >> 16 & mask;
@@ -273,7 +271,7 @@ int parityCheck(int x) {
  *   Rating: 2
  */
 int mul2OK(int x) {
-  return x >> 31 & 1 ^ x >> 30 & 1;     // x第31位和第30位异或
+  return ~(x >> 31 & 0x1 ^ x >> 30 & 0x1) & 0x1;    // x第31位和第30位异或
 }
 /*
  * mult3div2 - multiplies by 3/2 rounding toward 0,
@@ -288,7 +286,7 @@ int mul2OK(int x) {
  */
 int mult3div2(int x) {
   x = (x << 1) + x;
-  return (x >> 1) + (x >> 31 & x & 1);  // 向0方向取整
+  return (x >> 1) + (x >> 31 & x & 0x1);            // 向0方向取整
 }
 /*
  * subOK - Determine if can compute x-y without overflow
@@ -300,7 +298,7 @@ int mult3div2(int x) {
  */
 int subOK(int x, int y) {
   int mask = 1 << 31;
-  return !!(!(x & mask ^ y & mask) | (y & mask ^ x - y ^ mask));
+  return !((x & mask ^ y & mask) & (x & mask ^ (x + ~y + 1 & mask)));
 }
 /*
  * absVal - absolute value of x
@@ -312,7 +310,7 @@ int subOK(int x, int y) {
  */
 int absVal(int x) {
   int m = x >> 31;
-  return (x ^ m) - m;       // 负数则^m即为取反，-m即为+1
+  return (x ^ m) + ~m + 1;                  // 正数则不变，负数则^m相当于取反，-m相当于+1
 }
 /*
  * float_abs - Return bit-level equivalent of absolute value of f for
@@ -326,7 +324,7 @@ int absVal(int x) {
  *   Rating: 2
  */
 unsigned float_abs(unsigned uf) {
-  if (x > 0x7f800000)       // NaN
+  if ((uf & 0x7fffffff) > 0x7f800000)       // NaN
     return uf;
   return uf & ~(1 << 31);
 }
@@ -343,8 +341,16 @@ unsigned float_abs(unsigned uf) {
  *   Rating: 4
  */
 int float_f2i(unsigned uf) {
-  int s = uf & 1 << 31;                         // sign
-  int e = (uf & (1 << 31 >> 8 & -1)) - 127;     // exponent
-  int m = uf & ~(1 << 31 >> 8) | 1 << 23;       // mantissa
-  return m >> 23 - e ^ s << 31 >> 31 + s;       // complement
+  int s = (uf & 1 << 31) >> 31;             // sign
+  int e = ((uf & 0x7f800000) >> 23) - 127;  // exponent
+  int m = uf & ~(1 << 31 >> 8) | 1 << 23;   // mantissa
+  
+  if (e == 127) return 0x80000000;          // NaN or infinity
+  if (!(uf & 0x7fffffff)) return 0;         // exponent = mantissa = 0
+  
+  e = 23 - e;
+  if (e > 23) return 0;                     // 0.x
+  if (e < -8) return 0x80000000;            // overflow
+  if (e > 0) return (m >> e ^ s) - s;       // exponent < 23, right shift and calculate complement
+  return (m << -e ^ s) - s;                 // 23 < exponent < 31, left shift and calculate complement
 }
