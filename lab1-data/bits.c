@@ -233,7 +233,7 @@ int logicalOr(int x, int y) {
  *   Rating: 3
  */
 int rotateLeft(int x, int n) {
-  int mask = 1 << 31 >> 31 - n;
+  int mask = 1 << 31 >> 31 + ~n ;
   return x >> 31 + ~n + 1 & ~mask | x << n;
 }
 /*
@@ -300,7 +300,7 @@ int mult3div2(int x) {
  */
 int subOK(int x, int y) {
   int mask = 1 << 31;
-  return !!(!(x & mask ^ y & mask) | (y & mask ^ x - y ^ mask));
+  return !!(!(x & mask ^ y & mask) | (y & mask ^ x + ~y + 1 ^ mask));
 }
 /*
  * absVal - absolute value of x
