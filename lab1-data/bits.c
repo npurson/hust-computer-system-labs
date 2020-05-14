@@ -351,6 +351,6 @@ int float_f2i(unsigned uf) {
   e = 23 - e;
   if (e > 32) return 0;                     // 0.x
   if (e < -8) return 0x80000000;            // overflow
-  if (e > 0) return (m >> e ^ s) + s & 0x1; // exponent < 23, right shift and calculate complement
-  return (m << -e ^ s) + s & 0x1;           // 23 < exponent < 31, left shift and calculate complement
+  if (e > 0) return (m >> e ^ s) - s;       // exponent < 23, right shift and calculate complement
+  return (m << -e ^ s) - s;                 // 23 < exponent < 31, left shift and calculate complement
 }
