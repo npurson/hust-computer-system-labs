@@ -210,6 +210,7 @@ int byteXor(int x, int y, int n) {
  */
 int logicalAnd(int x, int y) {
   return !!x & !!y;
+  // return !!(x & y);
 }
 /*
  *   logicalOr - x || y
@@ -219,6 +220,7 @@ int logicalAnd(int x, int y) {
  */
 int logicalOr(int x, int y) {
   return !!x | !!y;
+  // return !!(x | y);
 }
 /*
  * rotateLeft - Rotate x to the left by n
