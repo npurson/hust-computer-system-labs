@@ -183,10 +183,7 @@ int lsbZero(int x) {
  *   Rating: 2
  */
 int byteNot(int x, int n) {
-  n = n << 3;
-  return x ^ 0xff << n;     // 与1异或相当于取反
-  // int nByte = x & 0xff << (n << 3);
-  // return x ^ nByte | nByte;
+  return x ^ 0xff << (n << 3);              // 与1异或相当于取反
 }
 /*
  *   byteXor - compare the nth byte of x and y, if it is same, return 0, if not, return 1
@@ -209,8 +206,7 @@ int byteXor(int x, int y, int n) {
  *   Rating: 3
  */
 int logicalAnd(int x, int y) {
-  return !!x & !!y;
-  // return !!(x & y);
+  return !!(x & y);
 }
 /*
  *   logicalOr - x || y
@@ -219,8 +215,7 @@ int logicalAnd(int x, int y) {
  *   Rating: 3
  */
 int logicalOr(int x, int y) {
-  return !!x | !!y;
-  // return !!(x | y);
+  return !!(x | y);
 }
 /*
  * rotateLeft - Rotate x to the left by n
@@ -242,12 +237,12 @@ int rotateLeft(int x, int n) {
  *   Rating: 4
  */
 int parityCheck(int x) {
-  x = x ^ x << 16;          // 存储在高8位可以避免右移后需要清0的问题
+  x = x ^ x << 16;                  // 存储在高8位可以避免右移后需要清0的问题
   x = x ^ x << 8;
   x = x ^ x << 4;
   x = x ^ x << 2;
   x = x ^ x << 1;
-  return x >> 31 & 0x1;
+  return x >> 31 & 1;
 
   // int mask = 0xff << 8 + 0xff;
   // x = x & mask ^ x >> 16 & mask;
@@ -271,7 +266,7 @@ int parityCheck(int x) {
  *   Rating: 2
  */
 int mul2OK(int x) {
-  return ~(x >> 31 & 0x1 ^ x >> 30 & 0x1) & 0x1;    // x第31位和第30位异或
+  return ~(x >> 31 ^ x >> 30) & 1;              // x第31位和第30位异或
 }
 /*
  * mult3div2 - multiplies by 3/2 rounding toward 0,
@@ -285,8 +280,8 @@ int mul2OK(int x) {
  *   Rating: 2
  */
 int mult3div2(int x) {
-  x = (x << 1) + x;
-  return (x >> 1) + (x >> 31 & x & 0x1);            // 向0方向取整
+  x = x + (x << 1);
+  return (x >> 1) + (x >> 31 & x & 1);          // 向0方向取整
 }
 /*
  * subOK - Determine if can compute x-y without overflow
@@ -310,7 +305,7 @@ int subOK(int x, int y) {
  */
 int absVal(int x) {
   int m = x >> 31;
-  return (x ^ m) + ~m + 1;                  // 正数则不变，负数则^m相当于取反，-m相当于+1
+  return x - (m & 1) ^ m;
 }
 /*
  * float_abs - Return bit-level equivalent of absolute value of f for
@@ -342,7 +337,7 @@ unsigned float_abs(unsigned uf) {
  */
 int float_f2i(unsigned uf) {
   int s = (uf & 1 << 31) >> 31;             // sign
-  int e = ((uf & 0x7f800000) >> 23) - 127;  // exponent
+  int e = ((uf >> 23 & 0xff) - 127;         // exponent
   int m = uf & ~(1 << 31 >> 8) | 1 << 23;   // mantissa
   
   if (e == 127) return 0x80000000;          // NaN or infinity
